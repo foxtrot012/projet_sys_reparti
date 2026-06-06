@@ -1,0 +1,45 @@
+{
+  "matieres": [
+    {
+      "code": "MATH101",
+      "nom": "Mathématiques",
+      "coefficient": 3
+    },
+    {
+      "code": "INFO102",
+      "nom": "Algorithmique",
+      "coefficient": 3
+    },
+    {
+      "code": "PHYS103",
+      "nom": "Physique",
+      "coefficient": 2
+    },
+    {
+      "code": "ANGL104",
+      "nom": "Anglais",
+      "coefficient": 1
+    },
+    {
+      "code": "RESX105",
+      "nom": "Systèmes Répartis",
+      "coefficient": 3
+    }
+  ],
+  "etudiants": [
+    {
+      "id": "ET001",
+      "nom": "Camara",
+      "prenom": "Mamadou",
+      "filiere": "Génie Informatique",
+      "notes": [
+        {
+          "etudiant_id": "ET001",
+          "matiere_code": "MATH101",
+          "valeur": 15.0,
+          "professeur": "Prof.Diallo"
+        }
+      ]
+    }
+  ]
+}
