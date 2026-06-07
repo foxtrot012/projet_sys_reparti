@@ -125,7 +125,7 @@ def creer_user(username, password, role, nom, etudiant_id=None):
         )
         conn.commit()
         return True, "Compte créé."
-    except mysql.connector.IntegrityError::
+    except mysql.connector.IntegrityError:
         return False, "Nom d'utilisateur déjà pris."
     finally:
         conn.close()
@@ -134,7 +134,7 @@ def lister_users(role=None):
     conn = get_connection()
     c = conn.cursor(dictionary=True)
     if role:
-        c.execute("SELECT id,username,role,nom,actif FROM users WHERE role=?", (role,))
+        c.execute("SELECT id,username,role,nom,actif FROM users WHERE role=%s", (role,))
     else:
         c.execute("SELECT id,username,role,nom,actif FROM users WHERE role != 'admin'")
     users = [dict(r) for r in c.fetchall()]
@@ -144,7 +144,7 @@ def lister_users(role=None):
 def supprimer_user(username):
     conn = get_connection()
     c = conn.cursor(dictionary=True)
-    c.execute("DELETE FROM users WHERE username=?", (username,))
+    c.execute("DELETE FROM users WHERE username=%s", (username,))
     conn.commit()
     conn.close()
 
@@ -157,7 +157,7 @@ def ajouter_faculte(nom):
         c.execute("INSERT INTO facultes (nom) VALUES (%s)", (nom,))
         conn.commit()
         return True, "Faculté ajoutée."
-    except sqlite3.IntegrityError:
+    except mysql.connector.IntegrityError:
         return False, "Faculté existe déjà."
     finally:
         conn.close()
@@ -264,7 +264,7 @@ def ajouter_etudiant(id, nom, prenom, filiere_id, niveau, semestre, valide=0):
         )
         conn.commit()
         return True, "Étudiant ajouté."
-    except sqlite3.IntegrityError:
+    except mysql.connector.IntegrityError:
         return False, "Étudiant existe déjà."
     finally:
         conn.close()
@@ -348,7 +348,7 @@ def assigner_matiere_prof(user_id, matiere_id):
         )
         conn.commit()
         return True, "Matière assignée."
-    except sqlite3.IntegrityError:
+   except mysql.connector.IntegrityError:
         return False, "Déjà assigné."
     finally:
         conn.close()
