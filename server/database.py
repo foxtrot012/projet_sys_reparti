@@ -125,7 +125,7 @@ def creer_user(username, password, role, nom, etudiant_id=None):
         )
         conn.commit()
         return True, "Compte créé."
-    except sqlite3.IntegrityError:
+    except mysql.connector.IntegrityError::
         return False, "Nom d'utilisateur déjà pris."
     finally:
         conn.close()
