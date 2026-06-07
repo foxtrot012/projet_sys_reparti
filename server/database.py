@@ -2,9 +2,6 @@
 import mysql.connector
 import os
 import bcrypt
-import os
-
-DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'gestion_notes.db')
 
 def get_connection():
     return mysql.connector.connect(
@@ -17,7 +14,7 @@ def get_connection():
 
 def initialiser_db():
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
 
     # Facultés
     c.execute('''CREATE TABLE IF NOT EXISTS facultes (
@@ -95,7 +92,7 @@ def initialiser_db():
     if not c.fetchone():
         h = bcrypt.hashpw("admin123".encode(), bcrypt.gensalt()).decode()
         c.execute(
-            "INSERT INTO users (username, password_hash, role, nom) VALUES (?,?,?,?)",
+            "INSERT INTO users (username, password_hash, role, nom) VALUES (%s,%s,%s,%s)",
             ('admin', h, 'admin', 'Administrateur')
         )
         conn.commit()
@@ -107,7 +104,7 @@ def initialiser_db():
 
 def verifier_login(username, password):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     c.execute("SELECT * FROM users WHERE username=? AND actif=1", (username,))
     user = c.fetchone()
     conn.close()
@@ -119,11 +116,11 @@ def verifier_login(username, password):
 
 def creer_user(username, password, role, nom, etudiant_id=None):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     try:
         h = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
         c.execute(
-            "INSERT INTO users (username,password_hash,role,nom,etudiant_id) VALUES (?,?,?,?,?)",
+            "INSERT INTO users (username,password_hash,role,nom,etudiant_id) VALUES (%s,%s,%s,%s,%s)",
             (username, h, role, nom, etudiant_id)
         )
         conn.commit()
@@ -135,7 +132,7 @@ def creer_user(username, password, role, nom, etudiant_id=None):
 
 def lister_users(role=None):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     if role:
         c.execute("SELECT id,username,role,nom,actif FROM users WHERE role=?", (role,))
     else:
@@ -146,7 +143,7 @@ def lister_users(role=None):
 
 def supprimer_user(username):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     c.execute("DELETE FROM users WHERE username=?", (username,))
     conn.commit()
     conn.close()
@@ -155,9 +152,9 @@ def supprimer_user(username):
 
 def ajouter_faculte(nom):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     try:
-        c.execute("INSERT INTO facultes (nom) VALUES (?)", (nom,))
+        c.execute("INSERT INTO facultes (nom) VALUES (%s)", (nom,))
         conn.commit()
         return True, "Faculté ajoutée."
     except sqlite3.IntegrityError:
@@ -167,7 +164,7 @@ def ajouter_faculte(nom):
 
 def lister_facultes():
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     c.execute("SELECT * FROM facultes")
     r = [dict(x) for x in c.fetchall()]
     conn.close()
@@ -175,8 +172,8 @@ def lister_facultes():
 
 def supprimer_faculte(id):
     conn = get_connection()
-    c = conn.cursor()
-    c.execute("DELETE FROM facultes WHERE id=?", (id,))
+    c = conn.cursor(dictionary=True)
+    c.execute("DELETE FROM facultes WHERE id=%s", (id,))
     conn.commit()
     conn.close()
     return True, "Faculté supprimée."
@@ -185,19 +182,19 @@ def supprimer_faculte(id):
 
 def ajouter_filiere(nom, faculte_id):
     conn = get_connection()
-    c = conn.cursor()
-    c.execute("INSERT INTO filieres (nom, faculte_id) VALUES (?,?)", (nom, faculte_id))
+    c = conn.cursor(dictionary=True)
+    c.execute("INSERT INTO filieres (nom, faculte_id) VALUES (%s,%s)", (nom, faculte_id))
     conn.commit()
     conn.close()
     return True, "Filière ajoutée."
 
 def lister_filieres(faculte_id=None):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     if faculte_id:
         c.execute('''SELECT f.*, fa.nom as faculte_nom
                      FROM filieres f JOIN facultes fa ON f.faculte_id=fa.id
-                     WHERE f.faculte_id=?''', (faculte_id,))
+                     WHERE f.faculte_id=%s''', (faculte_id,))
     else:
         c.execute('''SELECT f.*, fa.nom as faculte_nom
                      FROM filieres f JOIN facultes fa ON f.faculte_id=fa.id''')
@@ -207,8 +204,8 @@ def lister_filieres(faculte_id=None):
 
 def supprimer_filiere(id):
     conn = get_connection()
-    c = conn.cursor()
-    c.execute("DELETE FROM filieres WHERE id=?", (id,))
+    c = conn.cursor(dictionary=True)
+    c.execute("DELETE FROM filieres WHERE id=%s", (id,))
     conn.commit()
     conn.close()
     return True, "Filière supprimée."
@@ -217,10 +214,10 @@ def supprimer_filiere(id):
 
 def ajouter_matiere(code, nom, coefficient, niveau, semestre, filiere_id):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     try:
         c.execute(
-            "INSERT INTO matieres (code,nom,coefficient,niveau,semestre,filiere_id) VALUES (?,?,?,?,?,?)",
+            "INSERT INTO matieres (code,nom,coefficient,niveau,semestre,filiere_id) VALUES (%s,%s,%s,%s,%s,%s)",
             (code, nom, coefficient, niveau, semestre, filiere_id)
         )
         conn.commit()
@@ -232,17 +229,17 @@ def ajouter_matiere(code, nom, coefficient, niveau, semestre, filiere_id):
 
 def lister_matieres(filiere_id=None, niveau=None, semestre=None):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     query = '''SELECT m.*, f.nom as filiere_nom
                FROM matieres m JOIN filieres f ON m.filiere_id=f.id
                WHERE 1=1'''
     params = []
     if filiere_id:
-        query += " AND m.filiere_id=?"; params.append(filiere_id)
+        query += " AND m.filiere_id=%s"; params.append(filiere_id)
     if niveau:
-        query += " AND m.niveau=?"; params.append(niveau)
+        query += " AND m.niveau=%s"; params.append(niveau)
     if semestre:
-        query += " AND m.semestre=?"; params.append(semestre)
+        query += " AND m.semestre=%s"; params.append(semestre)
     c.execute(query, params)
     r = [dict(x) for x in c.fetchall()]
     conn.close()
@@ -250,8 +247,8 @@ def lister_matieres(filiere_id=None, niveau=None, semestre=None):
 
 def supprimer_matiere(id):
     conn = get_connection()
-    c = conn.cursor()
-    c.execute("DELETE FROM matieres WHERE id=?", (id,))
+    c = conn.cursor(dictionary=True)
+    c.execute("DELETE FROM matieres WHERE id=%s", (id,))
     conn.commit()
     conn.close()
     return True, "Matière supprimée."
@@ -259,10 +256,10 @@ def supprimer_matiere(id):
 # ── Étudiants ──────────────────────────────────────────────
 def ajouter_etudiant(id, nom, prenom, filiere_id, niveau, semestre, valide=0):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     try:
         c.execute(
-            "INSERT INTO etudiants (id,nom,prenom,filiere_id,niveau,semestre,valide) VALUES (?,?,?,?,?,?,?)",
+            "INSERT INTO etudiants (id,nom,prenom,filiere_id,niveau,semestre,valide) VALUES (%s,%s,%s,%s,%s,%s,%s)",
             (id, nom, prenom, filiere_id, niveau, semestre, valide)
         )
         conn.commit()
@@ -274,24 +271,24 @@ def ajouter_etudiant(id, nom, prenom, filiere_id, niveau, semestre, valide=0):
 
 def valider_etudiant(id):
     conn = get_connection()
-    c = conn.cursor()
-    c.execute("UPDATE etudiants SET valide=1 WHERE id=?", (id,))
+    c = conn.cursor(dictionary=True)
+    c.execute("UPDATE etudiants SET valide=1 WHERE id=%s", (id,))
     conn.commit()
     conn.close()
     return True, "Étudiant validé."
 
 def rejeter_etudiant(id):
     conn = get_connection()
-    c = conn.cursor()
-    c.execute("DELETE FROM etudiants WHERE id=?", (id,))
-    c.execute("DELETE FROM users WHERE etudiant_id=?", (id,))
+    c = conn.cursor(dictionary=True)
+    c.execute("DELETE FROM etudiants WHERE id=%s", (id,))
+    c.execute("DELETE FROM users WHERE etudiant_id=%s", (id,))
     conn.commit()
     conn.close()
     return True, "Étudiant rejeté."
 
 def lister_etudiants(valide=None, filiere_id=None):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     query = '''SELECT e.*, f.nom as filiere_nom, fa.nom as faculte_nom
                FROM etudiants e
                JOIN filieres f  ON e.filiere_id = f.id
@@ -299,10 +296,10 @@ def lister_etudiants(valide=None, filiere_id=None):
                WHERE 1=1'''
     params = []
     if valide is not None:
-        query += " AND e.valide=?"
+        query += " AND e.valide=%s"
         params.append(valide)
     if filiere_id:
-        query += " AND e.filiere_id=?"
+        query += " AND e.filiere_id=%s"
         params.append(filiere_id)
     c.execute(query, params)
     r = [dict(x) for x in c.fetchall()]
@@ -311,29 +308,29 @@ def lister_etudiants(valide=None, filiere_id=None):
 
 def get_etudiant(id):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     c.execute('''SELECT e.*, f.nom as filiere_nom, fa.nom as faculte_nom
                  FROM etudiants e
                  JOIN filieres f  ON e.filiere_id=f.id
                  JOIN facultes fa ON f.faculte_id=fa.id
-                 WHERE e.id=?''', (id,))
+                 WHERE e.id=%s''', (id,))
     r = c.fetchone()
     conn.close()
     return dict(r) if r else None
 
 def supprimer_etudiant(id):
     conn = get_connection()
-    c = conn.cursor()
-    c.execute("DELETE FROM etudiants WHERE id=?", (id,))
-    c.execute("DELETE FROM notes WHERE etudiant_id=?", (id,))
-    c.execute("DELETE FROM users WHERE etudiant_id=?", (id,))
+    c = conn.cursor(dictionary=True)
+    c.execute("DELETE FROM etudiants WHERE id=%s", (id,))
+    c.execute("DELETE FROM notes WHERE etudiant_id=%s", (id,))
+    c.execute("DELETE FROM users WHERE etudiant_id=%s", (id,))
     conn.commit()
     conn.close()
     return True, "Étudiant supprimé."
 
 def compter_etudiants():
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     c.execute("SELECT COUNT(*) FROM etudiants WHERE valide=1")
     n = c.fetchone()[0]
     conn.close()
@@ -343,10 +340,10 @@ def compter_etudiants():
 
 def assigner_matiere_prof(user_id, matiere_id):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     try:
         c.execute(
-            "INSERT INTO prof_matieres (user_id, matiere_id) VALUES (?,?)",
+            "INSERT INTO prof_matieres (user_id, matiere_id) VALUES (%s,%s)",
             (user_id, matiere_id)
         )
         conn.commit()
@@ -358,12 +355,12 @@ def assigner_matiere_prof(user_id, matiere_id):
 
 def get_matieres_prof(user_id):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     c.execute('''SELECT m.*, f.nom as filiere_nom
                  FROM matieres m
                  JOIN prof_matieres pm ON m.id=pm.matiere_id
                  JOIN filieres f ON m.filiere_id=f.id
-                 WHERE pm.user_id=?''', (user_id,))
+                 WHERE pm.user_id=%s''', (user_id,))
     r = [dict(x) for x in c.fetchall()]
     conn.close()
     return r
@@ -372,10 +369,10 @@ def get_matieres_prof(user_id):
 
 def ajouter_note(etudiant_id, matiere_id, valeur, professeur):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     try:
         c.execute('''INSERT INTO notes (etudiant_id, matiere_id, valeur, professeur)
-                     VALUES (?,?,?,?)
+                     VALUES (%s,%s,%s,%s)
                      ON CONFLICT(etudiant_id, matiere_id)
                      DO UPDATE SET valeur=excluded.valeur, professeur=excluded.professeur''',
                   (etudiant_id, matiere_id, valeur, professeur))
@@ -385,17 +382,18 @@ def ajouter_note(etudiant_id, matiere_id, valeur, professeur):
         return False, str(e)
     finally:
         conn.close()
+        
 def get_notes_etudiant(etudiant_id, semestre=None):
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     query = '''SELECT n.*, m.nom as matiere_nom, m.coefficient,
                       m.semestre, m.code
                FROM notes n
                JOIN matieres m ON n.matiere_id=m.id
-               WHERE n.etudiant_id=?'''
+               WHERE n.etudiant_id=%s'''
     params = [etudiant_id]
     if semestre:
-        query += " AND m.semestre=?"
+        query += " AND m.semestre=%s"
         params.append(semestre)
     query += " ORDER BY m.semestre, m.nom"
     c.execute(query, params)
@@ -413,7 +411,7 @@ def get_moyenne_etudiant(etudiant_id):
 
 def get_stats():
     conn = get_connection()
-    c = conn.cursor()
+    c = conn.cursor(dictionary=True)
     c.execute("SELECT COUNT(*) FROM facultes")
     nb_facultes = c.fetchone()[0]
     c.execute("SELECT COUNT(*) FROM filieres")
@@ -434,8 +432,8 @@ def get_stats():
     }
 def avancer_semestre(etudiant_id):
     conn = get_connection()
-    c = conn.cursor()
-    c.execute("SELECT semestre, niveau FROM etudiants WHERE id=?", (etudiant_id,))
+    c = conn.cursor(dictionary=True)
+    c.execute("SELECT semestre, niveau FROM etudiants WHERE id=%s", (etudiant_id,))
     row = c.fetchone()
     if not row:
         conn.close()
@@ -449,7 +447,7 @@ def avancer_semestre(etudiant_id):
         conn.close()
         return False, "Niveau maximum atteint (Année 5)."
     c.execute(
-        "UPDATE etudiants SET semestre=?, niveau=? WHERE id=?",
+        "UPDATE etudiants SET semestre=%s, niveau=%s WHERE id=%s",
         (nouveau_semestre, nouveau_niveau, etudiant_id)
     )
     conn.commit()
