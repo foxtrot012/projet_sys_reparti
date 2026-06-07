@@ -1,24 +1,11 @@
 # server/app.py
-print("START APP")
-
-try:
-    from server.database import *
-    print("DATABASE IMPORT OK")
-
-    initialiser_db()
-    print("DATABASE INIT OK")
-
-except Exception as e:
-    print("ERREUR AU DEMARRAGE:", repr(e))
-    raise
-
-"""from flask import Flask, render_template, request, jsonify, session, redirect, url_for
+from flask import Flask, render_template, request, jsonify, session, redirect, url_for
 import os, sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from server.database import *
-"""
+
 app = Flask(
     __name__,
     template_folder=os.path.join(os.path.dirname(__file__), '..', 'templates'),
