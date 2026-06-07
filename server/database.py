@@ -1,14 +1,19 @@
 # server/database.py
-import sqlite3
+import mysql.connector
+import os
 import bcrypt
 import os
 
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'data', 'gestion_notes.db')
 
 def get_connection():
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    return conn
+    return mysql.connector.connect(
+        host=os.environ["DB_HOST"],
+        port=int(os.environ.get("DB_PORT", 3306)),
+        user=os.environ["DB_USER"],
+        password=os.environ["DB_PASSWORD"],
+        database=os.environ["DB_NAME"]
+    )
 
 def initialiser_db():
     conn = get_connection()
