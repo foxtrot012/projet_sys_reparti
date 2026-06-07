@@ -371,11 +371,13 @@ def ajouter_note(etudiant_id, matiere_id, valeur, professeur):
     conn = get_connection()
     c = conn.cursor(dictionary=True)
     try:
-        c.execute('''INSERT INTO notes (etudiant_id, matiere_id, valeur, professeur)
-                     VALUES (%s,%s,%s,%s)
-                     ON CONFLICT(etudiant_id, matiere_id)
-                     DO UPDATE SET valeur=excluded.valeur, professeur=excluded.professeur''',
-                  (etudiant_id, matiere_id, valeur, professeur))
+        c.execute("""
+            INSERT INTO notes
+            (etudiant_id, matiere_id, valeur, professeur)
+             VALUES (%s,%s,%s,%s)
+            ON DUPLICATE KEY UPDATE
+            valeur = VALUES(valeur),
+            professeur = VALUES(professeur)""", (etudiant_id, matiere_id, valeur, professeur))
         conn.commit()
         return True, f"Note {valeur}/20 enregistrée."
     except Exception as e:
