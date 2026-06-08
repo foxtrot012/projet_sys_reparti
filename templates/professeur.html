@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Professeur — Gestion de Notes</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+        </div>
+        <h2>Gestion de Notes</h2>
+        <p>Système Réparti</p>
+    </div>
+
+    <div class="sidebar-user">
+        <div class="avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+        </div>
+        <div class="info">
+            <div class="name">{{ user.nom }}</div>
+            <div class="role">Professeur</div>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section">Mon Espace</div>
+        <div class="nav-item active" onclick="showSection('saisie', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Saisie des notes
+        </div>
+        <div class="nav-item" onclick="showSection('consulter', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            Consulter les notes
+        </div>
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="/logout" class="btn-logout">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Déconnexion
+        </a>
+    </div>
+</aside>
+
+<main class="main">
+    <div class="topbar">
+        <div>
+            <h1 id="page-title">Saisie des notes</h1>
+            <div class="breadcrumb" id="page-breadcrumb">Enregistrer les notes des étudiants</div>
+        </div>
+    </div>
+
+    <div class="page-content">
+
+        <!-- Saisie -->
+        <div id="section-saisie" class="section active">
+            <div class="card">
+                <div class="card-title" style="margin-bottom:1rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Ajouter / Modifier une note
+                </div>
+                <div id="alert-note" class="alert"></div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Matière</label>
+                        <select id="note-matiere" onchange="chargerEtudiants()">
+                            <option value="">Sélectionner...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Étudiant</label>
+                        <select id="note-etudiant">
+                            <option value="">Sélectionner d'abord une matière...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Note (/20)</label>
+                        <input type="number" id="note-valeur" min="0" max="20" step="0.25" placeholder="ex: 15">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="ajouterNote()">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    Enregistrer
+                </button>
+            </div>
+
+            <!-- Liste étudiants de la matière -->
+            <div class="card" id="card-liste" style="display:none;">
+                <div class="card-title" style="margin-bottom:1rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="9" cy="7" r="4"/>
+                    </svg>
+                    Notes déjà saisies — <span id="titre-matiere"></span>
+                </div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Étudiant</th>
+                                <th>Filière</th>
+                                <th>Note</th>
+                                <th>Résultat</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-notes-matiere"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consulter -->
+        <div id="section-consulter" class="section">
+            <div class="card">
+                <div class="card-title" style="margin-bottom:1rem;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    </svg>
+                    Consulter les notes d'un étudiant
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Étudiant</label>
+                        <select id="consulter-etudiant" onchange="consulterNotes()">
+                            <option value="">Sélectionner...</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="card-consulter" style="display:none;">
+                <div class="card-title" style="margin-bottom:1rem;" id="titre-consulter">Notes</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Matière</th>
+                                <th>Semestre</th>
+                                <th>Note</th>
+                                <th>Progression</th>
+                                <th>Résultat</th>
+                                <th>Professeur</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-consulter"></tbody>
+                    </table>
+                </div>
+                <div id="moyenne-consulter" style="margin-top:1rem;padding:1rem;border-radius:10px;background:var(--bg);font-weight:600;font-size:14px;"></div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<script>
+const NOM_PROF  = "{{ user.nom }}";
+const PROF_ID   = {{ user.id }};
+
+const TITLES = {
+    saisie:    ['Saisie des notes',    'Enregistrer les notes des étudiants'],
+    consulter: ['Consulter les notes', 'Voir les notes par étudiant'],
+};
+
+function showSection(name, el) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    el.classList.add('active');
+    document.getElementById('page-title').textContent      = TITLES[name][0];
+    document.getElementById('page-breadcrumb').textContent = TITLES[name][1];
+    if (name === 'consulter') chargerEtudiantsConsulter();
+}
+
+function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.className = 'alert alert-' + type + ' show';
+    el.textContent = msg;
+    setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// Charge les matières assignées au prof
+async function chargerMatieres() {
+    const matieres = await fetch('/api/professeurs/' + PROF_ID + '/matieres').then(r => r.json());
+    const sel = document.getElementById('note-matiere');
+    if (matieres.length === 0) {
+        sel.innerHTML = '<option value="">Aucune matière assignée</option>';
+        return;
+    }
+    sel.innerHTML = '<option value="">Sélectionner...</option>' +
+        matieres.map(m => '<option value="' + m.id + '" data-nom="' + m.nom + '" data-semestre="' + m.semestre + '" data-filiere="' + m.filiere_id + '">' +
+            m.nom + ' — S' + m.semestre + ' (' + m.filiere_nom + ')</option>').join('');
+}
+
+// Charge les étudiants selon la matière sélectionnée
+async function chargerEtudiants() {
+    const sel      = document.getElementById('note-matiere');
+    const opt      = sel.options[sel.selectedIndex];
+    if (!sel.value) return;
+
+    const filiereId = opt.getAttribute('data-filiere');
+    const semestre  = opt.getAttribute('data-semestre');
+    const matiereNom = opt.getAttribute('data-nom');
+
+    document.getElementById('titre-matiere').textContent = matiereNom;
+
+    // Charge les étudiants de cette filière et semestre
+    const etudiants = await fetch('/api/etudiants?valide=1&filiere_id=' + filiereId).then(r => r.json());
+    const etudSel   = document.getElementById('note-etudiant');
+
+    if (etudiants.length === 0) {
+        etudSel.innerHTML = '<option value="">Aucun étudiant dans cette filière</option>';
+    } else {
+        etudSel.innerHTML = '<option value="">Sélectionner...</option>' +
+            etudiants.map(e => '<option value="' + e.id + '">' + e.id + ' — ' + e.prenom + ' ' + e.nom + '</option>').join('');
+    }
+
+    // Affiche les notes déjà saisies pour cette matière
+    await chargerNotesMatiere(sel.value, matiereNom, etudiants);
+}
+
+async function chargerNotesMatiere(matiereId, matiereNom, etudiants) {
+    document.getElementById('card-liste').style.display = 'block';
+
+    // Pour chaque étudiant, récupère sa note dans cette matière
+    const tbody = document.getElementById('table-notes-matiere');
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--text-light);">Chargement...</td></tr>';
+
+    const rows = await Promise.all(etudiants.map(async e => {
+        const notes = await fetch('/api/notes/' + e.id).then(r => r.json());
+        const note  = notes.find(n => n.matiere_id === parseInt(matiereId));
+        const valeur = note ? note.valeur : null;
+        const badge  = valeur !== null
+            ? (valeur >= 10 ? '<span class="badge badge-success">' + valeur + '/20</span>' : '<span class="badge badge-danger">' + valeur + '/20</span>')
+            : '<span style="color:var(--text-light);font-size:12px;">Non noté</span>';
+        const resultat = valeur !== null
+            ? (valeur >= 10 ? '<span class="badge badge-success">Admis</span>' : '<span class="badge badge-danger">Ajourné</span>')
+            : '—';
+        return '<tr><td><strong>' + e.prenom + ' ' + e.nom + '</strong><br><small style="color:var(--text-light);">' + e.id + '</small></td>' +
+               '<td>' + e.filiere_nom + '</td>' +
+               '<td>' + badge + '</td>' +
+               '<td>' + resultat + '</td></tr>';
+    }));
+
+    tbody.innerHTML = rows.join('') || '<tr><td colspan="4" style="text-align:center;color:var(--text-light);padding:2rem;">Aucun étudiant</td></tr>';
+}
+
+async function ajouterNote() {
+    const matiereId  = document.getElementById('note-matiere').value;
+    const etudiantId = document.getElementById('note-etudiant').value;
+    const valeur     = parseFloat(document.getElementById('note-valeur').value);
+
+    if (!matiereId || !etudiantId || isNaN(valeur))
+        return showAlert('alert-note', 'Remplissez tous les champs.', 'error');
+    if (valeur < 0 || valeur > 20)
+        return showAlert('alert-note', 'La note doit être entre 0 et 20.', 'error');
+
+    const r = await fetch('/api/notes', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            etudiant_id:  etudiantId,
+            matiere_id:   parseInt(matiereId),
+            valeur:       valeur,
+            professeur:   NOM_PROF
+        })
+    }).then(r => r.json());
+
+    showAlert('alert-note', r.message, r.ok ? 'success' : 'error');
+    if (r.ok) {
+        document.getElementById('note-valeur').value = '';
+        chargerEtudiants();
+    }
+}
+
+// Consulter
+async function chargerEtudiantsConsulter() {
+    const etudiants = await fetch('/api/etudiants?valide=1').then(r => r.json());
+    document.getElementById('consulter-etudiant').innerHTML =
+        '<option value="">Sélectionner...</option>' +
+        etudiants.map(e => '<option value="' + e.id + '">' + e.id + ' — ' + e.prenom + ' ' + e.nom + '</option>').join('');
+}
+
+async function consulterNotes() {
+    const etudiantId = document.getElementById('consulter-etudiant').value;
+    if (!etudiantId) return;
+
+    const [notes, moyRep] = await Promise.all([
+        fetch('/api/notes/' + etudiantId).then(r => r.json()),
+        fetch('/api/moyenne/' + etudiantId).then(r => r.json())
+    ]);
+
+    document.getElementById('card-consulter').style.display = 'block';
+    document.getElementById('titre-consulter').textContent = 'Notes de ' + etudiantId;
+
+    const tbody = document.getElementById('table-consulter');
+    if (!notes || notes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-light);padding:2rem;">Aucune note.</td></tr>';
+    } else {
+        tbody.innerHTML = notes.map(n => {
+            const pct   = (n.valeur / 20) * 100;
+            const color = n.valeur >= 14 ? 'good' : n.valeur >= 10 ? 'average' : 'bad';
+            const badge = n.valeur >= 10
+                ? '<span class="badge badge-success">Admis</span>'
+                : '<span class="badge badge-danger">Ajourné</span>';
+            return '<tr>' +
+                '<td><strong>' + n.matiere_nom + '</strong></td>' +
+                '<td><span class="badge badge-purple">S' + n.semestre + '</span></td>' +
+                '<td><strong>' + n.valeur + '/20</strong></td>' +
+                '<td><div class="note-bar"><div class="note-bar-fill ' + color + '" style="width:' + pct + '%"></div></div></td>' +
+                '<td>' + badge + '</td>' +
+                '<td>' + n.professeur + '</td>' +
+                '</tr>';
+        }).join('');
+    }
+
+    const moy = moyRep.moyenne;
+    document.getElementById('moyenne-consulter').innerHTML =
+        'Moyenne générale : <strong style="font-size:18px;color:' + (moy >= 10 ? 'var(--success)' : 'var(--danger)') + ';">' + moy + '/20</strong>' +
+        ' — ' + (moy >= 10 ? '<span class="badge badge-success">Admis</span>' : '<span class="badge badge-danger">Ajourné</span>');
+}
+
+// Init
+chargerMatieres();
+</script>
+
+</body>
+</html>

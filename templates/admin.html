@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Gestion de Notes</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+            </svg>
+        </div>
+        <h2>Gestion de Notes</h2>
+        <p>Système Réparti</p>
+    </div>
+
+    <div class="sidebar-user">
+        <div class="avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+        </div>
+        <div class="info">
+            <div class="name">{{ user.nom }}</div>
+            <div class="role">Administrateur</div>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section">Principal</div>
+        <div class="nav-item active" onclick="showSection('dashboard', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+            </svg>
+            Dashboard
+        </div>
+        <div class="nav-section">Structure</div>
+        <div class="nav-item" onclick="showSection('facultes', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                <polyline points="9 22 9 12 15 12 15 22"/>
+            </svg>
+            Facultés
+        </div>
+        <div class="nav-item" onclick="showSection('filieres', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+                <line x1="8" y1="18" x2="21" y2="18"/>
+            </svg>
+            Filières
+        </div>
+        <div class="nav-item" onclick="showSection('matieres', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+            </svg>
+            Matières
+        </div>
+        <div class="nav-section">Utilisateurs</div>
+        <div class="nav-item" onclick="showSection('etudiants', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+            Étudiants
+        </div>
+        <div class="nav-item" onclick="showSection('validations', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            Validations
+            <span id="badge-attente" style="margin-left:auto;background:var(--danger);color:white;border-radius:20px;padding:1px 8px;font-size:11px;display:none;"></span>
+        </div>
+        <div class="nav-item" onclick="showSection('professeurs', this)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+            </svg>
+            Professeurs
+        </div>
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="/logout" class="btn-logout">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Déconnexion
+        </a>
+    </div>
+</aside>
+
+<main class="main">
+    <div class="topbar">
+        <div>
+            <h1 id="page-title">Dashboard</h1>
+            <div class="breadcrumb" id="page-breadcrumb">Vue d'ensemble du système</div>
+        </div>
+    </div>
+
+    <div class="page-content">
+
+        <!-- Dashboard -->
+        <div id="section-dashboard" class="section active">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="number" id="s-facultes">—</div>
+                        <div class="label">Facultés</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="number" id="s-filieres">—</div>
+                        <div class="label">Filières</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="number" id="s-etudiants">—</div>
+                        <div class="label">Étudiants</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="number" id="s-profs">—</div>
+                        <div class="label">Professeurs</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon red">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    </div>
+                    <div class="stat-info">
+                        <div class="number" id="s-attente">—</div>
+                        <div class="label">En attente</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Facultés -->
+        <div id="section-facultes" class="section">
+            <div class="card">
+                <div class="card-title" style="margin-bottom:1rem;">Ajouter une faculté</div>
+                <div id="alert-faculte" class="alert"></div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nom de la faculté</label>
+                        <input type="text" id="faculte-nom" placeholder="ex: Faculté des Sciences">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="ajouterFaculte()">Ajouter</button>
+            </div>
+            <div class="card">
+                <div class="card-title" style="margin-bottom:1rem;">Liste des facultés</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>#</th><th>Nom</th><th>Action</th></tr></thead>
+                        <tbody id="table-facultes"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filières -->
+        <div id="section-filieres" class="section">
+            <div class="card">
+                <div class="card-title" style="margin-bottom:1rem;">Ajouter une filière</div>
+                <div id="alert-filiere" class="alert"></div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Faculté</label>
+                        <select id="filiere-faculte"><option value="">Sélectionner...</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label>Nom de la filière</label>
+                        <input type="text" id="filiere-nom" placeholder="ex: Génie Informatique">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="ajouterFiliere()">Ajouter</button>
+            </div>
+            <div class="card">
+                <div class="card-title" style="margin-bottom:1rem;">Liste des filières</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Filière</th><th>Faculté</th><th>Action</th></tr></thead>
+                        <tbody id="table-filieres"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Matières -->
+        <div id="section-matieres" class="section">
+            <div class="card">
+                <div class="card-title" style="margin-bottom:1rem;">Ajouter une matière</div>
+                <div id="alert-matiere" class="alert"></div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Filière</label>
+                        <select id="matiere-filiere"><option value="">Sélectionner...</option></select>
+                    </div>
+                   <div class="form-group">
+    <label>Niveau</label>
+    <select id="matiere-niveau">
+        <option value="">Sélectionner...</option>
+        <option value="1">Année 1</option>
+        <option value="2">Année 2</option>
+        <option value="3">Année 3</option>
+        <option value="4">Année 4</option>
+        <option value="5">Année 5</option>
+    </select>
+</div>
+<div class="form-group">
+    <label>Semestre</label>
+    <select id="matiere-semestre">
+        <option value="">Sélectionner...</option>
+        <option value="1">Semestre 1</option>
+        <option value="2">Semestre 2</option>
+        <option value="3">Semestre 3</option>
+        <option value="4">Semestre 4</option>
+        <option value="5">Semestre 5</option>
+        <option value="6">Semestre 6</option>
+        <option value="7">Semestre 7</option>
+        <option value="8">Semestre 8</option>
+        <option value="9">Semestre 9</option>
+        <option value="10">Semestre 10</option>
+    </select>
+</div>
+                    <div class="form-group">
+                        <label>Code</label>
+                        <input type="text" id="matiere-code" placeholder="ex: INFO101">
+                    </div>
+                    <div class="form-group">
+                        <label>Nom</label>
+                        <input type="text" id="matiere-nom" placeholder="ex: Algorithmique">
+                    </div>
+                    <div class="form-group">
+                        <label>Coefficient</label>
+                        <input type="number" id="matiere-coeff" min="1" max="10" value="1">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="ajouterMatiere()">Ajouter</button>
+            </div>
+            <div class="card">
+                <div class="card-title" style="margin-bottom:1rem;">Liste des matières</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Code</th><th>Nom</th><th>Filière</th><th>Semestre</th><th>Coeff</th><th>Action</th></tr></thead>
+                        <tbody id="table-matieres"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Étudiants -->
+        <div id="section-etudiants" class="section">
+            <div class="card">
+                <div class="card-title" style="margin-bottom:1rem;">Étudiants validés</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>ID</th><th>Nom</th><th>Filière</th><th>Faculté</th><th>Semestre</th><th>Action</th></tr></thead>
+                        <tbody id="table-etudiants"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Validations -->
+        <div id="section-validations" class="section">
+            <div class="card">
+                <div class="card-title" style="margin-bottom:1rem;">Inscriptions en attente</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>ID</th><th>Nom</th><th>Filière</th><th>Faculté</th><th>Semestre</th><th>Actions</th></tr></thead>
+                        <tbody id="table-validations"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Professeurs -->
+        <div id="section-professeurs" class="section">
+            <div class="card">
+                <div class="card-title" style="margin-bottom:1rem;">Ajouter un professeur</div>
+                <div id="alert-prof" class="alert"></div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Nom complet</label>
+                        <input type="text" id="prof-nom" placeholder="ex: Dr. Diallo Mamadou">
+                    </div>
+                    <div class="form-group">
+                        <label>Nom d'utilisateur</label>
+                        <input type="text" id="prof-username" placeholder="ex: dr.diallo">
+                    </div>
+                    <div class="form-group">
+                        <label>Mot de passe</label>
+                        <input type="password" id="prof-password" placeholder="••••••••">
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="ajouterProfesseur()">Ajouter</button>
+            </div>
+            <div class="card">
+                <div class="card-title" style="margin-bottom:1rem;">Liste des professeurs</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Nom</th><th>Username</th><th>Matières assignées</th><th>Actions</th></tr></thead>
+                        <tbody id="table-profs"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<!-- Modal -->
+<div id="modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:16px;min-width:400px;max-width:90vw;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+        <div style="display:flex;justify-content:flex-end;padding:1rem 1rem 0;">
+            <button onclick="document.getElementById('modal').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text-light);">✕</button>
+        </div>
+        <div id="modal-body"></div>
+    </div>
+</div>
+
+<script>
+const TITLES = {
+    dashboard:   ['Dashboard',   "Vue d'ensemble du système"],
+    facultes:    ['Facultés',    'Gérer les facultés'],
+    filieres:    ['Filières',    'Gérer les filières par faculté'],
+    matieres:    ['Matières',    'Gérer les matières par filière et semestre'],
+    etudiants:   ['Étudiants',   'Étudiants validés'],
+    validations: ['Validations', 'Inscriptions en attente'],
+    professeurs: ['Professeurs', 'Gérer les comptes professeurs'],
+};
+
+function showSection(name, el) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    el.classList.add('active');
+    document.getElementById('page-title').textContent = TITLES[name][0];
+    document.getElementById('page-breadcrumb').textContent = TITLES[name][1];
+    if (loaders[name]) loaders[name]();
+}
+
+function showAlert(id, msg, type) {
+    const el = document.getElementById(id);
+    el.className = 'alert alert-' + type + ' show';
+    el.textContent = msg;
+    setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+async function chargerStats() {
+    const s = await fetch('/api/stats').then(r => r.json());
+    document.getElementById('s-facultes').textContent  = s.facultes;
+    document.getElementById('s-filieres').textContent  = s.filieres;
+    document.getElementById('s-etudiants').textContent = s.etudiants;
+    document.getElementById('s-profs').textContent     = s.profs;
+    document.getElementById('s-attente').textContent   = s.en_attente;
+    const badge = document.getElementById('badge-attente');
+    if (s.en_attente > 0) { badge.textContent = s.en_attente; badge.style.display = 'inline'; }
+    else { badge.style.display = 'none'; }
+}
+
+async function chargerFacultes() {
+    const data = await fetch('/api/facultes').then(r => r.json());
+    document.getElementById('table-facultes').innerHTML = data.length
+        ? data.map(f => '<tr><td>' + f.id + '</td><td><strong>' + f.nom + '</strong></td><td><button class="btn btn-danger btn-sm" onclick="supprimerFaculte(' + f.id + ')">Supprimer</button></td></tr>').join('')
+        : '<tr><td colspan="3" style="text-align:center;color:var(--text-light);padding:2rem;">Aucune faculté</td></tr>';
+    const opts = '<option value="">Sélectionner...</option>' + data.map(f => '<option value="' + f.id + '">' + f.nom + '</option>').join('');
+    document.getElementById('filiere-faculte').innerHTML = opts;
+}
+
+async function ajouterFaculte() {
+    const nom = document.getElementById('faculte-nom').value.trim();
+    if (!nom) return showAlert('alert-faculte', 'Entrez le nom.', 'error');
+    const r = await fetch('/api/facultes', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({nom}) }).then(r => r.json());
+    showAlert('alert-faculte', r.message, r.ok ? 'success' : 'error');
+    if (r.ok) { document.getElementById('faculte-nom').value = ''; chargerFacultes(); chargerStats(); }
+}
+
+async function supprimerFaculte(id) {
+    if (!confirm('Supprimer ?')) return;
+    await fetch('/api/facultes/' + id, {method: 'DELETE'});
+    chargerFacultes(); chargerStats();
+}
+
+async function chargerFilieres() {
+    await chargerFacultes();
+    const data = await fetch('/api/filieres').then(r => r.json());
+    document.getElementById('table-filieres').innerHTML = data.length
+        ? data.map(f => '<tr><td><strong>' + f.nom + '</strong></td><td><span class="badge badge-primary">' + f.faculte_nom + '</span></td><td><button class="btn btn-danger btn-sm" onclick="supprimerFiliere(' + f.id + ')">Supprimer</button></td></tr>').join('')
+        : '<tr><td colspan="3" style="text-align:center;color:var(--text-light);padding:2rem;">Aucune filière</td></tr>';
+    const opts = '<option value="">Sélectionner...</option>' + data.map(f => '<option value="' + f.id + '">' + f.nom + ' — ' + f.faculte_nom + '</option>').join('');
+    const sel = document.getElementById('matiere-filiere');
+    if (sel) sel.innerHTML = opts;
+}
+
+async function ajouterFiliere() {
+    const nom = document.getElementById('filiere-nom').value.trim();
+    const faculte_id = document.getElementById('filiere-faculte').value;
+    if (!nom || !faculte_id) return showAlert('alert-filiere', 'Remplissez tous les champs.', 'error');
+    const r = await fetch('/api/filieres', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({nom, faculte_id: parseInt(faculte_id)}) }).then(r => r.json());
+    showAlert('alert-filiere', r.message, r.ok ? 'success' : 'error');
+    if (r.ok) { document.getElementById('filiere-nom').value = ''; chargerFilieres(); chargerStats(); }
+}
+
+async function supprimerFiliere(id) {
+    if (!confirm('Supprimer ?')) return;
+    await fetch('/api/filieres/' + id, {method: 'DELETE'});
+    chargerFilieres(); chargerStats();
+}
+
+async function chargerMatieres() {
+    const filiere_id = document.getElementById('matiere-filiere').value;
+    const url = filiere_id ? '/api/matieres?filiere_id=' + filiere_id : '/api/matieres';
+    const data = await fetch(url).then(r => r.json());
+    document.getElementById('table-matieres').innerHTML = data.length
+        ? data.map(m => '<tr><td><code style="background:var(--bg);padding:2px 8px;border-radius:6px;">' + m.code + '</code></td><td><strong>' + m.nom + '</strong></td><td>' + m.filiere_nom + '</td><td><span class="badge badge-purple">S' + m.semestre + '</span></td><td><span class="badge badge-primary">' + m.coefficient + '</span></td><td><button class="btn btn-danger btn-sm" onclick="supprimerMatiere(' + m.id + ')">Supprimer</button></td></tr>').join('')
+        : '<tr><td colspan="6" style="text-align:center;color:var(--text-light);padding:2rem;">Aucune matière</td></tr>';
+}
+
+async function ajouterMatiere() {
+    const filiere_id  = document.getElementById('matiere-filiere').value;
+    const niveau      = document.getElementById('matiere-niveau').value;
+    const semestre    = document.getElementById('matiere-semestre').value;
+    const code        = document.getElementById('matiere-code').value.trim();
+    const nom         = document.getElementById('matiere-nom').value.trim();
+    const coefficient = parseInt(document.getElementById('matiere-coeff').value);
+    if (!filiere_id || !niveau || !semestre || !code || !nom)
+        return showAlert('alert-matiere', 'Remplissez tous les champs.', 'error');
+    const r = await fetch('/api/matieres', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({code, nom, coefficient, niveau: parseInt(niveau), semestre: parseInt(semestre), filiere_id: parseInt(filiere_id)})
+    }).then(r => r.json());
+    showAlert('alert-matiere', r.message, r.ok ? 'success' : 'error');
+    if (r.ok) {
+        document.getElementById('matiere-code').value = '';
+        document.getElementById('matiere-nom').value = '';
+        chargerMatieres();
+    }
+}
+
+async function supprimerMatiere(id) {
+    if (!confirm('Supprimer ?')) return;
+    await fetch('/api/matieres/' + id, {method: 'DELETE'});
+    chargerMatieres();
+}
+
+async function chargerEtudiants() {
+    const data = await fetch('/api/etudiants?valide=1').then(r => r.json());
+    document.getElementById('table-etudiants').innerHTML = data.length
+        ? data.map(e => '<tr>' +
+            '<td><code style="background:var(--bg);padding:2px 8px;border-radius:6px;">' + e.id + '</code></td>' +
+            '<td><strong>' + e.prenom + ' ' + e.nom + '</strong></td>' +
+            '<td>' + e.filiere_nom + '</td>' +
+            '<td><span class="badge badge-primary">' + e.faculte_nom + '</span></td>' +
+            '<td><span class="badge badge-purple">Année ' + e.niveau + ' — S' + e.semestre + '</span></td>' +
+            '<td style="display:flex;gap:6px;">' +
+            '<button class="btn btn-success btn-sm" onclick="avancerSemestre(\'' + e.id + '\')" ' + (e.semestre >= 10 ? 'disabled' : '') + '>S' + (e.semestre + 1) + ' →</button>' +
+            '<button class="btn btn-danger btn-sm" onclick="supprimerEtudiant(\'' + e.id + '\')">Supprimer</button>' +
+            '</td>' +
+            '</tr>').join('')
+        : '<tr><td colspan="6" style="text-align:center;color:var(--text-light);padding:2rem;">Aucun étudiant validé</td></tr>';
+}
+
+async function supprimerEtudiant(id) {
+    if (!confirm('Supprimer ?')) return;
+    await fetch('/api/etudiants/' + id, {method: 'DELETE'});
+    chargerEtudiants(); chargerStats();
+}
+
+async function chargerValidations() {
+    const data = await fetch('/api/etudiants?valide=0').then(r => r.json());
+    document.getElementById('table-validations').innerHTML = data.length
+        ? data.map(e => '<tr><td><code style="background:var(--bg);padding:2px 8px;border-radius:6px;">' + e.id + '</code></td><td><strong>' + e.prenom + ' ' + e.nom + '</strong></td><td>' + e.filiere_nom + '</td><td><span class="badge badge-primary">' + e.faculte_nom + '</span></td><td><span class="badge badge-purple">S' + e.semestre + '</span></td><td style="display:flex;gap:8px;"><button class="btn btn-success btn-sm" onclick="validerEtudiant(\'' + e.id + '\')">Valider</button><button class="btn btn-danger btn-sm" onclick="rejeterEtudiant(\'' + e.id + '\')">Rejeter</button></td></tr>').join('')
+        : '<tr><td colspan="6" style="text-align:center;color:var(--text-light);padding:2rem;">Aucune inscription en attente</td></tr>';
+}
+
+async function validerEtudiant(id) {
+    await fetch('/api/etudiants/' + id + '/valider', {method: 'POST'});
+    chargerValidations(); chargerStats();
+}
+
+async function rejeterEtudiant(id) {
+    if (!confirm('Rejeter ?')) return;
+    await fetch('/api/etudiants/' + id + '/rejeter', {method: 'POST'});
+    chargerValidations(); chargerStats();
+}
+
+async function chargerProfesseurs() {
+    const data = await fetch('/api/professeurs').then(r => r.json());
+    document.getElementById('table-profs').innerHTML = data.length
+        ? data.map(p => '<tr><td><strong>' + p.nom + '</strong></td><td><code style="background:var(--bg);padding:2px 8px;border-radius:6px;">' + p.username + '</code></td><td id="matieres-prof-' + p.id + '">Chargement...</td><td><button class="btn btn-danger btn-sm" onclick="supprimerProf(\'' + p.username + '\')">Supprimer</button></td></tr>').join('')
+        : '<tr><td colspan="4" style="text-align:center;color:var(--text-light);padding:2rem;">Aucun professeur</td></tr>';
+
+    data.forEach(async function(p) {
+        const matieres = await fetch('/api/professeurs/' + p.id + '/matieres').then(r => r.json());
+        const el = document.getElementById('matieres-prof-' + p.id);
+        if (el) {
+            const badges = matieres.map(m => '<span class="badge badge-purple" style="margin:2px;">' + m.nom + '</span>').join('');
+            el.innerHTML = (badges || '<span style="color:var(--text-light);font-size:12px;">Aucune</span>') +
+                '<br><button class="btn btn-outline btn-sm" style="margin-top:6px;" onclick="voirMatieres(' + p.id + ',\'' + p.nom + '\')">Gérer</button>';
+        }
+    });
+}
+
+async function ajouterProfesseur() {
+    const nom = document.getElementById('prof-nom').value.trim();
+    const username = document.getElementById('prof-username').value.trim();
+    const password = document.getElementById('prof-password').value.trim();
+    if (!nom || !username || !password) return showAlert('alert-prof', 'Remplissez tous les champs.', 'error');
+    const r = await fetch('/api/professeurs', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({nom, username, password}) }).then(r => r.json());
+    showAlert('alert-prof', r.message, r.ok ? 'success' : 'error');
+    if (r.ok) { document.getElementById('prof-nom').value = ''; document.getElementById('prof-username').value = ''; document.getElementById('prof-password').value = ''; chargerProfesseurs(); chargerStats(); }
+}
+
+async function supprimerProf(username) {
+    if (!confirm('Supprimer ?')) return;
+    await fetch('/api/professeurs/' + username, {method: 'DELETE'});
+    chargerProfesseurs(); chargerStats();
+}
+
+async function voirMatieres(profId, profNom) {
+    const matieres = await fetch('/api/matieres').then(r => r.json());
+    const assignees = await fetch('/api/professeurs/' + profId + '/matieres').then(r => r.json());
+    const assigneesIds = assignees.map(m => m.id);
+    const opts = matieres.map(m => '<option value="' + m.id + '" ' + (assigneesIds.includes(m.id) ? 'selected' : '') + '>' + m.nom + ' (' + m.filiere_nom + ' — S' + m.semestre + ')</option>').join('');
+    document.getElementById('modal-body').innerHTML =
+        '<div style="padding:1.5rem;"><h3 style="margin-bottom:1rem;">Matières de ' + profNom + '</h3>' +
+        '<select id="modal-matieres" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;margin-bottom:1rem;"><option value="">Sélectionner...</option>' + opts + '</select>' +
+        '<button class="btn btn-primary" onclick="assignerMatiere(' + profId + ')">Assigner</button></div>';
+    document.getElementById('modal').style.display = 'flex';
+}
+
+async function assignerMatiere(profId) {
+    const matiereId = document.getElementById('modal-matieres').value;
+    if (!matiereId) return;
+    const r = await fetch('/api/professeurs/' + profId + '/matieres', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({matiere_id: parseInt(matiereId)}) }).then(r => r.json());
+    alert(r.message);
+    document.getElementById('modal').style.display = 'none';
+    chargerProfesseurs();
+}
+async function avancerSemestre(id) {
+    if (!confirm('Faire passer cet étudiant au semestre suivant ?')) return;
+    const r = await fetch('/api/etudiants/' + id + '/avancer', {method: 'POST'}).then(r => r.json());
+    alert(r.message);
+    chargerEtudiants();
+}
+
+const loaders = {
+    dashboard:   chargerStats,
+    facultes:    chargerFacultes,
+    filieres:    chargerFilieres,
+    matieres:    chargerFilieres,
+    etudiants:   chargerEtudiants,
+    validations: chargerValidations,
+    professeurs: chargerProfesseurs,
+};
+
+chargerStats();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>En attente — Gestion de Notes</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--accent) 100%);
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh;
+        }
+        .box {
+            background: white; border-radius: 20px; padding: 3rem;
+            text-align: center; max-width: 420px; width: 90%;
+            box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+        }
+        .icon { width: 80px; height: 80px; background: #FFF7ED; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem; }
+        h1 { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 0.5rem; }
+        p  { font-size: 14px; color: var(--text-light); line-height: 1.6; margin-bottom: 1.5rem; }
+    </style>
+</head>
+<body>
+<div class="box">
+    <div class="icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+    </div>
+    <h1>Inscription en attente</h1>
+    <p>Votre inscription est en cours de validation par l'administrateur. Revenez plus tard.</p>
+    <a href="/logout" class="btn btn-primary" style="text-decoration:none;">Se déconnecter</a>
+</div>
+</body>
+</html>
